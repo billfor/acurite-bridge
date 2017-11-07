@@ -1,0 +1,15 @@
+Satisfy Any
+Options -Indexes
+Order deny,allow
+Deny from all
+Allow from 192.168.1.0/24
+#Require ip any
+#Require ip 192.168.1.0/24
+#Require host accurite.local
+#turn on url rewriting 
+RewriteEngine on
+
+#remove the need for .php extention 
+RewriteCond %{REQUEST_FILENAME} !-d 
+RewriteCond %{REQUEST_FILENAME}\.php -f 
+RewriteRule ^(.*)$ $1.php
