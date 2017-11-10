@@ -62,3 +62,8 @@ Wunderground will return the string "success" mostly, and occasionally return ga
 
 	[2017/03/15 04:50:33] Curl error: rtupdate.wunderground.com:52.25.21.79: Empty reply from server
 
+### Openhab Samples
+The directory openhab contains a sample configuration using the MQTT bindings.
+
+![alt text](screenshots/image1.jpg)
+![alt text](screenshots/image2.jpg)

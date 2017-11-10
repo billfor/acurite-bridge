@@ -1,0 +1,9 @@
+Number OutTemp "Temperature [%.1f]" <temperature> (weather) {mqtt="<[broker:sensors/temp:state:default"}
+Number Humidity "Humidity [%d]" <humidity> (weather) {mqtt="<[broker:sensors/humidity:state:default"}
+Number Baro "Barometer [%.2f]" <pressure> (weather) {mqtt="<[broker:sensors/barometer:state:default"}
+Number Wind "Wind [%d mph]" <wind> (weather) {mqtt="<[broker:sensors/wind:state:default"}
+Number Rain "Rain Hourly [%.2f in]" <rain> (weather) {mqtt="<[broker:sensors/rain:state:default"}
+Number RainTotal "Rain Daily [%.2f in]" <rain> (weather) {mqtt="<[broker:sensors/raintotal:state:default"}
+Number UV "UV [%d]" <sun> (weather) {mqtt="<[broker:sensors/uv:state:default"}
+Number Bat5 "Bat/5 [MAP(weather.map):%s]" <lowbattery> (weather) {mqtt="<[broker:sensors/5N1battery:state:default"}
+Number BatP "Bat/P [MAP(weather.map):%s]" <lowbattery> (weather) {mqtt="<[broker:sensors/ProOutbattery:state:default"}
