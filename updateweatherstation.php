@@ -59,12 +59,13 @@
         parse_str($_SERVER["QUERY_STRING"],$qarray);
 
         // substitute external temp from remote if present
+	// the wunderground post is always with 5x1
         $tempf=data_getval("ProOut|tempf");
         $humidity=data_getval("ProOut|humidity");
         if ($tempf && $humidity) 
         {
           $qarray["tempf"]=($tempf+$qarray["tempf"])/2.0;
-          $qarray["humidity"]=$humidity; 
+          $qarray["humidity"]=($humidity+$qarray["humidity"])/2.0; 
         }
 
         // fix the accumulated rain to be based on 15 minute change in accumulated daily counter
@@ -101,12 +102,12 @@
           $client = new Client();
           $client->connect('localhost');
 
-          $client->publish("sensors/temp", $tempf);
-          $client->publish("sensors/humidity", $humidity);
+          $client->publish("sensors/temp", $qarray["tempf"]);
+          $client->publish("sensors/humidity", $qarray["humidity"]);
           $client->publish("sensors/barometer", $qarray["baromin"]);
-          $client->publish("sensors/wind", $qarray["windspeedmph"]);
-          $client->publish("sensors/rain", $qarray["rainin"]);
-          $client->publish("sensors/raintotal", $qarray["dailyrainin"]);
+          if (isset($qarray["windspeedmph"])) $client->publish("sensors/wind", $qarray["windspeedmph"]);
+          if (isset($qarray["rainin"])) $client->publish("sensors/rain", $qarray["rainin"]);
+          if (isset($qarray["dailyrainin"])) $client->publish("sensors/raintotal", $qarray["dailyrainin"]);
           $client->publish("sensors/5N1battery", (data_getval("5N1x31|battery")=="normal"?0:1));        
           $client->publish("sensors/ProOutbattery", (data_getval("ProOut|battery")=="normal"?0:1));       
 
@@ -178,6 +179,7 @@
         }
         if ($PARANOID)
         {
+	  if (count((array)$json) > 2) logToFile("Warning got more than expected return vars $result",true);
           $ary=array();
           if (isset($json->localtime)) $ary['localtime']=$json->localtime;
           if (isset($json->checkversion)) $ary['checkversion']=$json->checkversion;
