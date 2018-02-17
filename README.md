@@ -27,13 +27,13 @@ See the "upateweatherstation.php" script for further parameters.
 - make the ip address of the weatherbridge static by using dhcp reservations
 - fake entries (dnsmasq, etc...) for hubapi.myacurite.com and rtupdate.wunderground.com so that your webserver receives the weatherbridge GET instead of the real DNS hosts.
 
-One easy way add dnsmasq entries is with a router that supports it  (dd-wrt, tomato, merlin, etc...), for example (assuming 192.168.1.250 is the acurite bridge) add the following to /tmp/etc/hosts and /jffs/config/hosts.add on the router:	
+One easy way to add dnsmasq entries is with a router that supports it  (dd-wrt, tomato, merlin, etc...), for example (assuming 192.168.1.250 is the acurite bridge) add the following to /tmp/etc/hosts and /jffs/config/hosts.add on the router:	
 
 	192.168.1.250 mylocalwebserver hubapi.myacurite.com rtupdate.wunderground.com
 
 ### Testing:
 
-If all is working, and logging is enabled,  you should see a file $HTDOCS/weatherstation/logfile.txt, and a file $HTDOCS/weather.db3 if you have enabled the database.
+If all is working, and logging is enabled,  you should see a file $HTDOCS/weatherstation/logfile.txt, a key-value file weather.dat containing the most recent metrics and values, and a file $HTDOCS/weather.db3 if you have enabled the database.
 
 
 ### Notes on Apache Configuration:
