@@ -35,11 +35,9 @@ One easy way to add dnsmasq entries is with a router that supports it  (dd-wrt, 
 
 If all is working, and logging is enabled,  you should see the following files under $HTDOCS/weatherstation:
 
-**logfile.txt** logging information
-
-**weather.dat** key-values containing the most recent metrics and values
-
-**weather.db3** database, if you have enabled the database (use something like *sqlite3 weather.db3*)
+- **logfile.txt** logging information
+- **weather.dat** key-values containing the most recent metrics and values
+- **weather.db3** database, if you have enabled the database (use something like *sqlite3 weather.db3*)
 
 
 ### Notes on Apache Configuration:
