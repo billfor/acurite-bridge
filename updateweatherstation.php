@@ -65,7 +65,8 @@
         if ($tempf && $humidity) 
         {
           $qarray["tempf"]=($tempf+$qarray["tempf"])/2.0;
-          $qarray["humidity"]=($humidity+$qarray["humidity"])/2.0; 
+         // $qarray["humidity"]=($humidity+$qarray["humidity"])/2.0; 
+          $qarray["humidity"]=$humidity; 
         }
 
         // fix the accumulated rain to be based on 15 minute change in accumulated daily counter
