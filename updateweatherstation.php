@@ -8,11 +8,11 @@
   use Mosquitto\Client;
 
   $FILENAME="logfile.txt"; // status log in directory where this script lives
-  $ALLOWCONFIG=true; // allow acurite to send its response/update to the bridge
+  $ALLOWCONFIG=false; // allow acurite to send its response/update to the bridge. This is ignore after the march update.
   $FAKEVERSION=224; // if ALLOWCONFIG is true, even when sending acurites response, change the version to this.
   $PARANOID=true; // if ALLOWCONFIG, only send time and checkversion to the bridge. 
   // setting the following two parameters to FALSE will disable most logging, but not severe errors
-  $LOGRESPONSE=false; // show response from provider and possibly modified response to bridge
+  $LOGRESPONSE=true; // show response from provider and possibly modified response to bridge
   $LOGGING=false; // enable verbose logging
   //
   $DB_TIMESERIES=true; // enable sqlite database to store data
@@ -21,6 +21,9 @@
   //
   $PUBLISH=true; // publish MQTT
   $RAIN_CORRECTION=true; // fix rainin sawtooth with 15 min average from accumlated.
+  $DISABLE_WIND=true;  // do not send wind data when the 5-1 decides to break
+  $ENABLE_TOWER=true;  // send tower sensors to mqtt (you have to edit the code below)
+
 
   logToFile ("======================");
   $method = $_SERVER['REQUEST_METHOD'];
@@ -59,7 +62,7 @@
         parse_str($_SERVER["QUERY_STRING"],$qarray);
 
         // substitute external temp from remote if present
-	// the wunderground post is always with 5x1
+	      // the wunderground post is always with 5x1
         $tempf=data_getval("ProOut|tempf");
         $humidity=data_getval("ProOut|humidity");
         if ($tempf && $humidity) 
@@ -82,6 +85,13 @@
             if ($qarray["rainin"] < 0 ) $qarray["rainin"] = 0;
           }
           //logToFile("rainin after $qarray[rainin]");
+        }
+
+        // unset these until the windspeed indicator is fixed.
+        if ($DISABLE_WIND)
+        {
+          if (isset($qarray["windspeedmph"])) unset($qarray["windspeedmph"]);
+          if (isset($qarray["winddir"])) unset($qarray["winddir"]);
         }
 
         $url = "http://$ip" . "/weatherstation/updateweatherstation.php?" .
@@ -110,63 +120,85 @@
           if (isset($qarray["rainin"])) $client->publish("sensors/rain", $qarray["rainin"]);
           if (isset($qarray["dailyrainin"])) $client->publish("sensors/raintotal", $qarray["dailyrainin"]);
           $client->publish("sensors/5N1battery", (data_getval("5N1x31|battery")=="normal"?0:1));        
-          $client->publish("sensors/ProOutbattery", (data_getval("ProOut|battery")=="normal"?0:1));       
+          $client->publish("sensors/ProOutbattery", (data_getval("ProOut|battery")=="normal"?0:1));      
 
+          if ($ENABLE_TOWER)
+          {
+            $client->publish("sensors/BasementBattery", (data_getval("tower-00007524|battery")=="normal"?0:1));        
+            $client->publish("sensors/tempf-basement", (data_getval("tower-00007524|tempf")));       //tower hack, add serials here.
+            $client->publish("sensors/humidity-basement", (data_getval("tower-00007524|humidity")));       
+            $client->publish("sensors/dewpoint-basement", (data_getval("tower-00007524|tempf") -  (100.0-(data_getval("tower-00007524|humidity"))) /5.0)) ;       
+
+            $client->publish("sensors/KegBattery", (data_getval("tower-00002909|battery")=="normal"?0:1));        
+            $client->publish("sensors/tempf-keg", (data_getval("tower-00002909|tempf")));       
+            $client->publish("sensors/humidity-keg", (data_getval("tower-00002909|humidity")));       
+
+
+            $client->publish("sensors/garageBattery", (data_getval("tower-00000915|battery")=="normal"?0:1));        
+            $client->publish("sensors/garageTempf", (data_getval("tower-00000915|tempf")));       
+            $client->publish("sensors/garageHumidity", (data_getval("tower-00000915|humidity")));       
+          } 
          //$client->disconnect(); 
         }
-      } 
 
-      logToFile ("Sending to $url");
+        // as of march 1st the only thing we send to is weather underground
 
-      $ch = curl_init($url);
+        logToFile ("Sending to $url");
 
-      curl_setopt($ch,CURLOPT_URL, $url);
-      if( $method !== 'GET') {
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-      }
+        $ch = curl_init($url);
 
-      if($method == "PUT" || $method == "PATCH" || ($method == "POST" && empty($_FILES))) {
-        $data_str = file_get_contents('php://input');
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data_str);
-        logToFile($method.': '.$data_str.serialize($_POST));
-      }
-      elseif($method == "POST") {
-        $data_str = array();
-        if(!empty($_FILES)) {
-          foreach ($_FILES as $key => $value) {
-            $full_path = realpath( $_FILES[$key]['tmp_name']);
-            $data_str[$key] = '@'.$full_path;
-          }
+        curl_setopt($ch,CURLOPT_URL, $url);
+        if( $method !== 'GET') {
+          curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         }
-        logToFile($method.': '.serialize($data_str+$_POST));
 
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data_str+$_POST);
-      }
+        if($method == "PUT" || $method == "PATCH" || ($method == "POST" && empty($_FILES))) {
+          $data_str = file_get_contents('php://input');
+          curl_setopt($ch, CURLOPT_POSTFIELDS, $data_str);
+          logToFile($method.': '.$data_str.serialize($_POST));
+        }
+        elseif($method == "POST") {
+          $data_str = array();
+          if(!empty($_FILES)) {
+            foreach ($_FILES as $key => $value) {
+              $full_path = realpath( $_FILES[$key]['tmp_name']);
+              $data_str[$key] = '@'.$full_path;
+            }
+          }
+          logToFile($method.': '.serialize($data_str+$_POST));
 
-      curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-      curl_setopt( $ch, CURLOPT_HTTPHEADER, $headers_str );
+          curl_setopt($ch, CURLOPT_POSTFIELDS, $data_str+$_POST);
+        }
 
-      $result = curl_exec($ch);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt( $ch, CURLOPT_HTTPHEADER, $headers_str );
 
-      if ($result === false)
-      {
-        $err = "Curl error: $UPDATE:$ip: " . curl_error($ch);
-        logToFile($err,true);
-        curl_close($ch);
-      }
-      else
-      {
-        curl_close($ch);
-        break;
-      }
+        $result = curl_exec($ch);
+
+        if ($result === false)
+        {
+          $err = "Curl error: $UPDATE:$ip: " . curl_error($ch);
+          logToFile($err,true);
+          curl_close($ch);
+        }
+        else
+        {
+          $result = str_replace(PHP_EOL, '', $result);
+          curl_close($ch);
+          break;
+        }
+      } 
     }
 
-    $json=json_decode($result);
-
+    //logToFile("raw result  $result",$LOGRESPONSE );
+    //$json=json_decode($result);
+    // as of march 1, there is no json returned from acurite.
+/*
     if ($json)
     {
       //header('Content-Type: application/json');
       logToFile("acurite_from: $result",$LOGRESPONSE);
+
       if ($ALLOWCONFIG)
       {
         if (($FAKEVERSION) && isset($json->checkversion))
@@ -180,7 +212,7 @@
         }
         if ($PARANOID)
         {
-	  if (count((array)$json) > 2) logToFile("Warning got more than expected return vars $result",true);
+	        if (count((array)$json) > 2) logToFile("Warning got more than expected return vars $result",true);
           $ary=array();
           if (isset($json->localtime)) $ary['localtime']=$json->localtime;
           if (isset($json->checkversion)) $ary['checkversion']=$json->checkversion;
@@ -188,7 +220,8 @@
         }
         echo $result;
         logToFile ("acurite_brdg: $result",$LOGRESPONSE);
-      } 
+      }
+
       else
       {
         logToFile ("acurite: bridge update supressed",$LOGRESPONSE);
@@ -199,6 +232,18 @@
       echo $result;
       logToFile ("wunderground: $result",$LOGRESPONSE);
     }
+    */
+
+    if ($UPDATE === "rtupdate.wunderground.com")  
+    {
+      logToFile("Wunderground result is: $result",$LOGRESPONSE);
+    }
+    else
+    {
+      logToFile("Faking acurite response",$LOGGING);
+      echo '{"localtime":"00:00:00","checkversion":"224"}';
+    }
+
   }
   else 
   {

@@ -105,6 +105,9 @@ function data_save($querystring,$keep,$sample,$history)
 	$tarray = array();
 	$sampleOK=false;
     $station=$qarray["mt"];
+    $sensor=$qarray["sensor"];
+    if ($station === "tower") $station=$station."-".$sensor;
+
     $time=time();
 
 	$fh = fopen("weather.dat", 'r');
