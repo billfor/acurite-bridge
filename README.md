@@ -11,6 +11,8 @@ The following options may be turned on/off through variables in the script.
 - publish sensor data to MQTT (for use in openhab, etc....)
 - log all low-level request data to/from the bridge
 - freeze updates on the bridge (so this script will continue to work)
+- as of March 1st, fake data is sent back to the bridge to keep it working in absense of the acurite service
+- added support for the tower sensors (but you have to edit the code with your specific serial numbers)
 
 
 See the "upateweatherstation.php" script for further parameters.
