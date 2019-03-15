@@ -12,8 +12,8 @@
   $FAKEVERSION=224; // if ALLOWCONFIG is true, even when sending acurites response, change the version to this.
   $PARANOID=true; // if ALLOWCONFIG, only send time and checkversion to the bridge. 
   // setting the following two parameters to FALSE will disable most logging, but not severe errors
-  $LOGRESPONSE=true; // show response from provider and possibly modified response to bridge
-  $LOGGING=true; // enable verbose logging
+  $LOGRESPONSE=false; // show response from provider and possibly modified response to bridge
+  $LOGGING=false; // enable verbose logging
   //
   $DB_TIMESERIES=true; // enable sqlite database to store data
   $DB_HISTORY=31; // days of history to keep when using database. false/0 for infinite
@@ -21,8 +21,8 @@
   //
   $PUBLISH=true; // publish MQTT
   $RAIN_CORRECTION=true; // fix rainin sawtooth with 15 min average from accumlated.
-  $DISABLE_WIND=false;  // do not send wind data when the 5-1 decides to break
-  $ENABLE_TOWER=false;  // send tower sensors to mqtt (you have to edit the code below)
+  $DISABLE_WIND=true;  // do not send wind data when the 5-1 decides to break
+  $ENABLE_TOWER=true;  // send tower sensors to mqtt (you have to edit the code below)
 
 
   logToFile ("======================");
@@ -188,6 +188,10 @@
           break;
         }
       } 
+      else
+      {
+        logToFile ("Old Hub string $url");
+      }
     }
 
     //logToFile("raw result  $result",$LOGRESPONSE );
@@ -236,12 +240,14 @@
 
     if ($UPDATE === "rtupdate.wunderground.com")  
     {
-      logToFile("Wunderground result is: $result",$LOGRESPONSE);
+      logToFile("Wunderground $ip result is: $result",$LOGRESPONSE);
+      echo $result;
     }
     else
     {
-      logToFile("Faking acurite response",$LOGGING);
-      echo '{"localtime":"00:00:00","checkversion":"224"}';
+      logToFile("Faking acurite response",$LOGRESPONSE);
+      header('Content-Type: application/json');
+      echo '{"localtime":"04:00:00","checkversion":"224"}';
     }
 
   }
