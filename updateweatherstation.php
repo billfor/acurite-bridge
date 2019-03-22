@@ -7,6 +7,7 @@
 
   use Mosquitto\Client;
 
+
   $FILENAME="logfile.txt"; // status log in directory where this script lives
   $ALLOWCONFIG=false; // allow acurite to send its response/update to the bridge. This is ignore after the march update.
   $FAKEVERSION=224; // if ALLOWCONFIG is true, even when sending acurites response, change the version to this.
@@ -246,8 +247,11 @@
     else
     {
       logToFile("Faking acurite response",$LOGRESPONSE);
+  //    $time = time() - 60; // or filemtime($fn), etc
+  //    header('Date: '.gmdate('D, d M Y H:i:s', $time).' EDT');
       header('Content-Type: application/json');
-      echo '{"localtime":"04:00:00","checkversion":"224"}';
+      $timestr = date("H:i:s", time()); 
+      echo "{\"localtime\":"."\"$timestr\",\"checkversion\":\"224\"}";
     }
 
   }
