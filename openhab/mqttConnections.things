@@ -1,0 +1,69 @@
+Bridge mqtt:broker:myUnsecureBroker [ host="localhost",secure=false ]
+{
+
+	Thing topic accurite "Accurite" {
+	Channels:
+		Type number : outemp [ stateTopic="sensors/temp" ]
+		Type number : protemp [ stateTopic="sensors/protemp" ]
+		Type number : rawtemp [ stateTopic="sensors/tempraw" ]
+		Type number : soil [ stateTopic="sensors/soil" ]
+		Type number : humidity [ stateTopic="sensors/humidity" ]
+		Type number : barometer [ stateTopic="sensors/barometer" ]
+		Type number : wind [ stateTopic="sensors/wind" ]
+		Type number : winddir [ stateTopic="sensors/winddir" ]
+		Type number : rain [ stateTopic="sensors/rain" ]
+		Type number : raintotal [ stateTopic="sensors/raintotal" ]
+		Type number : uv [ stateTopic="sensors/uv" ]
+		Type number : fbattery [ stateTopic="sensors/5N1battery" ]
+		Type number : ProOutbattery [ stateTopic="sensors/ProOutbattery" ]
+		Type number : KegBattery [ stateTopic="sensors/KegBattery" ]
+		Type number : BasementBattery [ stateTopic="sensors/BasementBattery" ]
+		Type number : garageBattery [ stateTopic="sensors/garageBattery" ]
+		Type number : tempfbasement [ stateTopic="sensors/tempf-basement" ]
+		Type number : humiditybasement [ stateTopic="sensors/humidity-basement" ]
+		Type number : dewpointbasement [ stateTopic="sensors/dewpoint-basement" ]
+		Type number : tempfkeg [ stateTopic="sensors/tempf-keg" ]
+		Type number : humiditykeg [ stateTopic="sensors/humidity-keg" ]
+		Type number : garageTempf [ stateTopic="sensors/garageTempf" ]
+		Type number : garageHumidity [ stateTopic="sensors/garageHumidity" ]
+		Type number : timestamp [ stateTopic="sensors/time" ]
+	}
+
+	Thing topic gmc600 "GMC600" {
+	Channels:
+		Type number : CPM [ stateTopic="sensors/radCPM" ]
+		Type number : uSv [ stateTopic="sensors/raduSv" ]
+	}
+
+	Thing topic gw1000 "GW1000" {
+	Channels:
+		Type number : outemp [ stateTopic="ecowitt/temp" ]
+		Type number : dewpoint [ stateTopic="ecowitt/dewpoint" ]
+		Type number : rawtemp [ stateTopic="ecowitt/tempraw" ]
+		Type number : rain [ stateTopic="ecowitt/rain" ]
+		Type number : rainrate [ stateTopic="ecowitt/rainrate" ]
+		Type number : raintotal [ stateTopic="ecowitt/raintotal" ]
+		Type number : rainevent [ stateTopic="ecowitt/raineventin" ]
+		Type number : soil [ stateTopic="ecowitt/soil" ]
+		Type number : humidity [ stateTopic="ecowitt/humidity" ]
+		Type number : barometer [ stateTopic="ecowitt/barometer" ]
+		Type number : wind [ stateTopic="ecowitt/wind" ]
+		Type number : winddir [ stateTopic="ecowitt/winddir" ]
+		Type number : windgust [ stateTopic="ecowitt/windgust" ]
+		Type number : uv [ stateTopic="ecowitt/uv" ]
+		Type number : solar [ stateTopic="ecowitt/solar" ]
+		Type number : KegBattery [ stateTopic="ecowitt/KegBattery" ]
+		Type number : BasementBattery [ stateTopic="ecowitt/BasementBattery" ]
+		Type number : tempfbasement [ stateTopic="ecowitt/tempf-basement" ]
+		Type number : humiditybasement [ stateTopic="ecowitt/humidity-basement" ]
+		Type number : dewpointbasement [ stateTopic="ecowitt/dewpoint-basement" ]
+		Type number : tempfkeg [ stateTopic="ecowitt/tempf-keg" ]
+		Type number : humiditykeg [ stateTopic="ecowitt/humidity-keg" ]
+		Type number : garageTempf [ stateTopic="ecowitt/tempf-garage" ]
+		Type number : garageHumidity [ stateTopic="ecowitt/humidity-garage" ]
+		Type number : lightningTime [ stateTopic="ecowitt/lightningTime" ]		
+		Type number : lightningCount [ stateTopic="ecowitt/lightningCount" ]
+		Type number : timestamp [ stateTopic="ecowitt/time" ]
+	}
+}
+

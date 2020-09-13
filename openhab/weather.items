@@ -1,0 +1,59 @@
+// Number OutTemp  "Temperature [%.1f]"  <temperature>  (weather) { channel="mqtt:topic:myUnsecureBroker:outemp:temperature"
+Group:Number outdoortemps
+//Number OutTemp_old  "Temperature [%.1f °F]"  <temperature>  (outdoortemps) { channel="mqtt:topic:myUnsecureBroker:accurite:outemp" }
+Number OutTemp  "Temperature [%.1f °F]"  <temperature>  (outdoortemps) { channel="mqtt:topic:myUnsecureBroker:gw1000:outemp" }
+// dewpoint is currently computed by formula given by https://en.wikipedia.org/wiki/Dew_point and accurate to 50% RH
+// it is only sent to wunderground
+Number Dewpoint  "Dewpoint [%.1f °F]"  <temperature>  (outdoortemps) { channel="mqtt:topic:myUnsecureBroker:gw1000:dewpoint" }
+
+Number ProTemp  "ProTemp [%.1f °F]"  <temperature>  (outdoortemps) { channel="mqtt:topic:myUnsecureBroker:accurite:protemp" }
+Number RawTemp  "5in1Temp [%.1f °F]"  <temperature>  (outdoortemps) { channel="mqtt:topic:myUnsecureBroker:accurite:rawtemp" }
+Number Humidity "Humidity [%d%%]" <humidity> (weather) { channel="mqtt:topic:myUnsecureBroker:gw1000:humidity" }
+
+// Number Humidity_old  "Humidity [%d%%]" <humidity> (weather) { channel="mqtt:topic:myUnsecureBroker:accurite:humidity" }
+// Number Baro_old "Barometer [%.2f in.]" <pressure> (weather) { channel="mqtt:topic:myUnsecureBroker:accurite:barometer" }
+Number Baro "Barometer [%.2f in.]" <pressure> (weather) { channel="mqtt:topic:myUnsecureBroker:gw1000:barometer" }
+
+// Number Wind_old "Wind [%d mph.]" <wind> (weather) { channel="mqtt:topic:myUnsecureBroker:accurite:wind" }
+// Number WindDir_old "Wind Direction [%d°]"<compass> (weather) { channel="mqtt:topic:myUnsecureBroker:accurite:winddir" }
+Number Wind "Wind [%d mph.]" <wind> (weather) { channel="mqtt:topic:myUnsecureBroker:gw1000:wind" }
+Number WindDir "Wind Direction [%d°]"<compass> (weather) { channel="mqtt:topic:myUnsecureBroker:gw1000:winddir" }
+Number WindGust "Wind Gust [%d mph.]"<wind> (weather) { channel="mqtt:topic:myUnsecureBroker:gw1000:windgust" }
+
+
+Number Soil "Soil Temp [%.2f °F]" <terrain> (weather) { channel="mqtt:topic:myUnsecureBroker:accurite:soil" }
+Number Rain "Rain Hourly [%.2f in.]" <rain> (weather) { channel="mqtt:topic:myUnsecureBroker:accurite:rain" }
+Number RainTotal "Rain Daily [%.2f in.]" <rain> (weather){ channel="mqtt:topic:myUnsecureBroker:accurite:raintotal" } 
+Number UV "UV [%d]" <sun> (weather) { channel="mqtt:topic:myUnsecureBroker:gw1000:uv" }
+Number Solar "Solar Rad [%.2f w/m^2]" <sun> (weather) { channel="mqtt:topic:myUnsecureBroker:gw1000:solar" }
+
+Number Bat5 "Bat/5 [MAP(weather.map):%s]" <lowbattery> (weather) { channel="mqtt:topic:myUnsecureBroker:accurite:fbattery" }
+Number BatP "Bat/P [MAP(weather.map):%s]" <lowbattery> (weather) { channel="mqtt:topic:myUnsecureBroker:accurite:ProOutbattery" }
+Number BatKeg "Bat/K [MAP(weather.map):%s]" <lowbattery> (weather) { channel="mqtt:topic:myUnsecureBroker:accurite:KegBattery" }
+Number BatBase "Bat/B [MAP(weather.map):%s]" <lowbattery> (weather) { channel="mqtt:topic:myUnsecureBroker:accurite:BasementBattery" }
+Number BatGarage "Bat/G [MAP(weather.map):%s]" <lowbattery> (weather) { channel="mqtt:topic:myUnsecureBroker:accurite:garageBattery" }
+Number BasementTemp "Basement Temp [%.1f]" <temperature> (weather) { channel="mqtt:topic:myUnsecureBroker:accurite:tempfbasement" }
+Number BasementHumidity "Basement Humidity [%d]" <humidity> (weather) { channel="mqtt:topic:myUnsecureBroker:accurite:humiditybasement" }
+Number BasementDewpoint "Basement Dewpoint [%.1f]" <temperature> (weather) { channel="mqtt:topic:myUnsecureBroker:accurite:dewpointbasement" }
+Number KegTemp "KegTemp [%.1f]" <temperature> (weather) { channel="mqtt:topic:myUnsecureBroker:accurite:tempfkeg" }
+Number KegOverTemp
+Number KegHumidity "KegHumidity [%d]" <humidity> (weather) { channel="mqtt:topic:myUnsecureBroker:accurite:humiditykeg" }
+// Number GarageTemp_old "Garage Temp [%.1f]" <temperature> (weather) { channel="mqtt:topic:myUnsecureBroker:accurite:garageTempf" }
+// Number GarageHumidity_old "Garage Humidity [%d]" <humidity> (weather) { channel="mqtt:topic:myUnsecureBroker:accurite:garageHumidity" }
+Number WeatherTimeStamp_old "Timestamp [%d]" { channel="mqtt:topic:myUnsecureBroker:accurite:timestamp" }
+DateTime WeatherTimeStamp "Timestamp [%1$tm/%1$td %1$tH:%1$tM]"  <time> { channel="mqtt:topic:myUnsecureBroker:gw1000:timestamp" }
+//  Geigercounter
+Number RadCPM "Radiation (CPM) [%d]" <nuclear> { channel="mqtt:topic:myUnsecureBroker:gmc600:CPM" }
+Number RaduSv "Radiation (uSv) [%.3f]" <nuclear> { channel="mqtt:topic:myUnsecureBroker:gmc600:uSv" }
+// Ecowitt
+Number Rain_E "Rain Hourly [%.2f in.]" <rain> (weather) { channel="mqtt:topic:myUnsecureBroker:gw1000:rain" }
+Number RainTotal_E "Rain Daily [%.2f in.]" <rain> (weather){ channel="mqtt:topic:myUnsecureBroker:gw1000:raintotal" } 
+Number RainTotal_Event "Rain Event [%.2f in.]" <rain> (weather){ channel="mqtt:topic:myUnsecureBroker:gw1000:rainevent" } 
+Number RainRate "Rain Rate [%.2f in.]" <rain> (weather){ channel="mqtt:topic:myUnsecureBroker:gw1000:rainrate" } 
+Number LightningCount "Lightning Strikes [%d]" <lightning> (weather){ channel="mqtt:topic:myUnsecureBroker:gw1000:lightningCount" } 
+// the conversion below seems to happen automatically
+DateTime LightningTime "Lightning Time [%1$tm/%1$td %1$tH:%1$tM]" <lightning> (weather){ channel="mqtt:topic:myUnsecureBroker:gw1000:lightningTime" } 
+// Number LightningTime "Lightning Time [%d]" <lightning> (weather){ channel="mqtt:topic:myUnsecureBroker:gw1000:lightningTime" } 
+Number GarageTemp "Garage Temp [%.1f]" <temperature> (weather) { channel="mqtt:topic:myUnsecureBroker:gw1000:garageTempf" }
+Number GarageHumidity "Garage Humidity [%d]" <humidity> (weather) { channel="mqtt:topic:myUnsecureBroker:gw1000:garageHumidity" }
+

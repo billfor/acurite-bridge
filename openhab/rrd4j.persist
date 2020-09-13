@@ -1,0 +1,15 @@
+//
+Strategies {
+    everyMinute : "0 * * * * ?" 
+    everyHour   : "0 0 * * * ?"
+    everyDay    : "0 0 0 * * ?"
+}
+
+
+Items {
+	OutTemp : strategy = everyMinute, restoreOnStartup
+	Humidity : strategy = everyMinute, restoreOnStartup
+	Baro : strategy = everyMinute, restoreOnStartup
+	Wind : strategy = everyMinute, restoreOnStartup
+	RainTotal : strategy = everyMinute, restoreOnStartup
+}

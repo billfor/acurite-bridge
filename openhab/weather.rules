@@ -1,0 +1,124 @@
+
+// Note that http errors are surpressed in the logger config (/usr/lib/openhab2/etc) because wunderground keeps timing out
+rule "Post weather data to wunderground"
+when
+        Time cron "0 */1 * * * ?"  //every x minutes 
+then
+ // wunderground protocol ref https://support.weather.com/s/article/PWS-Upload-Protocol?language=en_US
+	val String url="http://rtupdate.wunderground.com/weatherstation/updateweatherstation.php"
+	var String postdata="ID=MYID&PASSWORD=MYPASSWORD&dateutc=now&action=updateraw&realtime=1&rtfreq=60&id=myid&mt=5N1x31&sensor=mysensorid"
+	postdata+="&windspeedmph="+Wind.state+"&winddir="+WindDir.state+"&rainin="+Rain.state+"&dailyrainin="+RainTotal.state
+			 +"&humidity="+Humidity.state+"&tempf="+OutTemp.state+"&baromin="+Baro.state+"&soiltempf="+Soil.state
+			 +"&windgustmph="+WindGust.state+"&uv="+UV.state+"&solarradiation="+Solar.state+"&dewptf="+Dewpoint.state
+
+
+
+    //logInfo("org.openhab","Posting data to weather undground."+url+" "+postdata)
+
+    var String result
+    var retryCount = 0
+    val Number epochCurrentTime = now.millis / 1000 - 600
+        
+    // don't send the data if the bridge is somehow broken
+    if (epochCurrentTime > WeatherTimeStamp.state )
+    {
+         logInfo("org.openhab","Will not send weather data to wunderground: now "+epochCurrentTime+" weather "+WeatherTimeStamp.state)
+         return;
+    }
+
+    while (retryCount < 3 && result != "success") 
+    {
+		try 
+		{
+		    result = sendHttpPostRequest(url, "application/x-www-form-urlencoded", postdata, 5000)
+		    if (result !== null) result = result.replaceAll("[\\n]","")
+	    	// logInfo("org.openhab","wunderground result "+ result)
+	    	retryCount++
+		}
+		catch(java.util.concurrent.ExecutionException e) // this will not work until they fix http method to throw this.
+		{
+	    	logInfo("org.openhab","Posting data to weather undground failed. "+e.getMessage)
+		}	
+		catch(java.util.concurrent.TimeoutException e) // this will not work until they fix http method to throw this.
+		{
+	    	logInfo("org.openhab","Posting to wunderground timeout. "+e.getMessage)
+		}
+		catch(Exception e) 
+		{
+          logError("org.openhab", "wunderground exception" + e.getMessage)	
+        }
+	}
+end
+
+
+rule "Post weather data to pwsweather"
+when
+        Time cron "0 */1 * * * ?"  //every x minutes 
+then
+
+	val String url="http://www.pwsweather.com/weatherstation/updateweatherstation.php"
+	var String postdata="ID=MYID&PASSWORD=MYPASSWORD&dateutc=now&action=updateraw&realtime=1&rtfreq=60&id=myid&mt=5N1x31&sensor=mysensorid"
+    val Number epochCurrentTime = now.millis / 1000 - 600
+        
+       // don't send the data if the bridge is somehow broken
+       if (epochCurrentTime > WeatherTimeStamp.state )
+       {
+         logInfo("org.openhab","Will not send weather data to pwsweather: now "+epochCurrentTime+" weather "+WeatherTimeStamp.state)
+         return;
+       }
+
+
+	//postdata+="&windspeedmph="+Wind.state+"&winddir="+WindDir.state+"&rainin="+Rain.state+"&dailyrainin="+RainTotal.state
+	//		 +"&humidity="+Humidity.state+"&tempf="+OutTemp.state+"&baromin="+Baro.state+"&soiltempf="+Soil.state
+
+
+	postdata+="&windspeedmph="+Wind.state+"&winddir="+WindDir.state+"&rainin="+Rain.state+"&dailyrainin="+RainTotal.state
+			 +"&humidity="+Humidity.state+"&tempf="+OutTemp.state+"&baromin="+Baro.state+"&soiltempf="+Soil.state
+			 +"&windgustmph="+WindGust.state+"&uv="+UV.state+"&solarradiation="+Solar.state
+
+  // logInfo("org.openhab","Posting data to pws."+url+" "+postdata)
+
+    var String result
+    var retryCount = 0
+
+    while (retryCount < 3 && result != "success") 
+    {
+		try 
+		{
+		    result = sendHttpPostRequest(url, "application/x-www-form-urlencoded", postdata, 5000)
+		    if (result !== null) result = result.replaceAll("[\\n]","")
+	    	// logInfo("org.openhab","pws result "+ result)
+	    	retryCount++
+		}
+		catch(java.util.concurrent.ExecutionException e) // this will not work until they fix http method to throw this.
+		{
+	    	logInfo("org.openhab","Posting data to pws failed. "+e.getMessage)
+		}	
+		catch(java.util.concurrent.TimeoutException e) // this will not work until they fix http method to throw this.
+		{
+	    	logInfo("org.openhab","Posting to pws timeout. "+e.getMessage)
+		}
+		catch(Exception e) 
+		{
+          logError("org.openhab", "pws exception" + e.getMessage)	
+        }
+	}
+end
+
+
+rule "Low Weather Batt"
+    when
+    Item Bat5 changed to 1
+    or
+    Item BatP changed to 1
+    or
+    Item BatKeg changed to 1
+    or
+    Item BatBase changed to 1
+    or
+    Item BatGarage changed to 1
+    then
+      // sendMail("xxxxxx@tmomail.net", "Weather","A battery is low or missing. Check status: "+triggeringItem.name+" Value:"+triggeringItem.name)
+      //logInfo("org.openhab","Battery reporting low: "+triggeringItem.name+" Value:"+triggeringItem.state+" Last: "+triggeringItem.previousState(false))
+      logInfo("org.openhab",BasementTemp.state+" Last: "+BasementTemp.previousState(false).state.toString)
+end

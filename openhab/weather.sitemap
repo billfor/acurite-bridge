@@ -1,0 +1,30 @@
+sitemap weather  label="Weather"
+{
+          Frame
+          {
+            Text item=OutTemp valuecolor=[<=32="blue",>95="red"]
+            Text item=Humidity 
+            Text item=Baro
+            Text item=Wind valuecolor=[>15="red"]
+            Text item=WindDir
+            Text item=Rain
+            Text item=RainTotal valuecolor=[>=2="red"]
+            Text item=Soil
+            Text item=WU_UV
+            Text item=WU_MinForcTemp2day valuecolor=[<=32="blue",>95="red"]
+            Text item=WU_MaxForcTemp2day valuecolor=[<=32="blue",>95="red"]
+            Text item=WU_MinForcTemp valuecolor=[<=32="blue",>95="red"]
+            Text item=WU_MaxForcTemp valuecolor=[<=32="blue",>95="red"]
+            Text item=Bat5 valuecolor=[!=0="red"]
+            Text item=BatP valuecolor=[!=0="red"]
+          }
+          Frame label="Weather Charts"
+          {
+            Chart  item=OutTemp legend=true period=d refresh=30000
+            Chart  item=Humidity legend=true period=d refresh=30000
+            Chart  item=Baro legend=true period=d refresh=30000
+            Chart  item=Wind period=d legend=true refresh=30000
+            Chart  item=RainTotal period=d legend=true refresh=30000
+          }
+}
+
