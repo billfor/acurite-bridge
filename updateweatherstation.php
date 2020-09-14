@@ -4,7 +4,6 @@
   require 'resolver.php';
   require 'logger.php';
   require 'database.php';
-
   use Mosquitto\Client;
 
 
@@ -22,9 +21,8 @@
   //
   $PUBLISH=true; // publish MQTT
   $RAIN_CORRECTION=true; // fix rainin sawtooth with 15 min average from accumlated.
-  $DISABLE_WIND=true;  // do not send wind data when the 5-1 decides to break
-  $ENABLE_TOWER=true;  // send tower sensors to mqtt (you have to edit the code below)
-
+  $DISABLE_WIND=false;  // do not send wind data when the 5-1 decides to break
+  
 
   logToFile ("======================");
   $method = $_SERVER['REQUEST_METHOD'];
@@ -40,7 +38,7 @@
       // if($key == 'Host') continue;
       $headers_str[]=$key.":".$value;
       if ($value === "hubapi.myacurite.com") $UPDATE=$value;
-      if ($value === "rtupdate.wunderground.com") $UPDATE=$value;
+      if ($value === "rtupdate.wunderground.com") logToFile("Bridge directly posted to wunderground.",true);
       logToFile($key.":".$value);
     }
 
@@ -51,16 +49,21 @@
     } 
 
     data_save($_SERVER["QUERY_STRING"],$DB_TIMESERIES,$DB_SAMPLE,$DB_HISTORY);
+    $url = "http://" . $_SERVER['REQUEST_URI'];
+    parse_str($_SERVER["QUERY_STRING"],$qarray);
+
+    /*
 
     $iplist=real_address($UPDATE);
 
     foreach ($iplist as $ip)
     {
       $url = "http://$ip" . $_SERVER['REQUEST_URI'];
+      parse_str($_SERVER["QUERY_STRING"],$qarray);
 
       if ($UPDATE === "rtupdate.wunderground.com")  
       {
-        parse_str($_SERVER["QUERY_STRING"],$qarray);
+        // parse_str($_SERVER["QUERY_STRING"],$qarray);
 
         // substitute external temp from remote if present
 	      // the wunderground post is always with 5x1
@@ -108,39 +111,6 @@
           $url .= "&UV=".$uv; // add UV from UVN800
         }
         //$url=$url."&leafwetness=25.0&soilmoisture=66.3&UV=0&solarradiation=0";
-
-        if ($PUBLISH)  //for openHab, etc....
-        {
-          $client = new Client();
-          $client->connect('localhost');
-
-          $client->publish("sensors/temp", $qarray["tempf"]);
-          $client->publish("sensors/humidity", $qarray["humidity"]);
-          $client->publish("sensors/barometer", $qarray["baromin"]);
-          if (isset($qarray["windspeedmph"])) $client->publish("sensors/wind", $qarray["windspeedmph"]);
-          if (isset($qarray["rainin"])) $client->publish("sensors/rain", $qarray["rainin"]);
-          if (isset($qarray["dailyrainin"])) $client->publish("sensors/raintotal", $qarray["dailyrainin"]);
-          $client->publish("sensors/5N1battery", (data_getval("5N1x31|battery")=="normal"?0:1));        
-          $client->publish("sensors/ProOutbattery", (data_getval("ProOut|battery")=="normal"?0:1));      
-
-          if ($ENABLE_TOWER)
-          {
-            $client->publish("sensors/BasementBattery", (data_getval("tower-00007524|battery")=="normal"?0:1));        
-            $client->publish("sensors/tempf-basement", (data_getval("tower-00007524|tempf")));       //tower hack, add serials here.
-            $client->publish("sensors/humidity-basement", (data_getval("tower-00007524|humidity")));       
-            $client->publish("sensors/dewpoint-basement", (data_getval("tower-00007524|tempf") -  (100.0-(data_getval("tower-00007524|humidity"))) /5.0)) ;       
-
-            $client->publish("sensors/KegBattery", (data_getval("tower-00002909|battery")=="normal"?0:1));        
-            $client->publish("sensors/tempf-keg", (data_getval("tower-00002909|tempf")));       
-            $client->publish("sensors/humidity-keg", (data_getval("tower-00002909|humidity")));       
-
-
-            $client->publish("sensors/garageBattery", (data_getval("tower-00000915|battery")=="normal"?0:1));        
-            $client->publish("sensors/garageTempf", (data_getval("tower-00000915|tempf")));       
-            $client->publish("sensors/garageHumidity", (data_getval("tower-00000915|humidity")));       
-          } 
-         //$client->disconnect(); 
-        }
 
         // as of march 1st the only thing we send to is weather underground
 
@@ -198,7 +168,7 @@
     //logToFile("raw result  $result",$LOGRESPONSE );
     //$json=json_decode($result);
     // as of march 1, there is no json returned from acurite.
-/*
+
     if ($json)
     {
       //header('Content-Type: application/json');
@@ -239,21 +209,111 @@
     }
     */
 
-    if ($UPDATE === "rtupdate.wunderground.com")  
-    {
-      logToFile("Wunderground $ip result is: $result",$LOGRESPONSE);
-      echo $result;
-    }
-    else
-    {
-      logToFile("Faking acurite response",$LOGRESPONSE);
-  //    $time = time() - 60; // or filemtime($fn), etc
-  //    header('Date: '.gmdate('D, d M Y H:i:s', $time).' EDT');
-      header('Content-Type: application/json');
-      $timestr = date("H:i:s", time()); 
-      echo "{\"localtime\":"."\"$timestr\",\"checkversion\":\"224\"}";
-    }
+    logToFile ("Hub string $url");
 
+    logToFile("Faking acurite response",$LOGRESPONSE);
+//    $time = time() - 60; // or filemtime($fn), etc
+//    header('Date: '.gmdate('D, d M Y H:i:s', $time).' EDT');
+    header('Content-Type: application/json');
+    $timestr = date("H:i:s", time()); 
+    echo "{\"localtime\":\"$timestr\",\"checkversion\":\"224\"}";
+    // echo "{\"localtime\":"."\"$timestr\",\"checkversion\":\"224\"}";
+
+    //  echo "{\"localtime\": \"$timestr\",\"checkversion\":\"224\",\"ID1\":\"KID\",\"PASSWORD1\":\"YOURPASSWORD\",\"sensor1\":\"YOURSENSORID\",\"elevation\":\"185\"}";
+  
+    if ($PUBLISH)  //for openHab, etc....
+    {
+      $station=$qarray["mt"];
+      if ($station === "tower") $station=$station."-".$qarray["sensor"];
+
+      logToFile ("Publishing MQTT");
+
+      $client = new Client();
+      $client->connect('localhost');
+
+    //  $client->publish("sensors/temp", $qarray["tempf"]);
+    //  $client->publish("sensors/temp", data_getval("ProOut|tempf"));    
+    // $client->publish("sensors/humidity", $qarray["humidity"]);
+    //  $client->publish("sensors/barometer", $qarray["baromin"]);
+
+      switch($station)
+      {
+        case "5N1x31":
+          $client->publish("sensors/5N1battery", $qarray["battery"]=="normal"?0:1); 
+          $client->loop();
+          $client->publish("sensors/barometer", $qarray["baromin"]);  
+          $client->loop();
+          if (isset($qarray["windspeedmph"])) $client->publish("sensors/wind", $qarray["windspeedmph"]);
+          $client->loop();
+          if (isset($qarray["winddir"]))  $client->publish("sensors/winddir", $qarray["winddir"]);
+          $client->loop();
+          if (isset($qarray["rainin"]))
+          {
+            if ($RAIN_CORRECTION)
+            {
+              //logToFile("rainin before $qarray[rainin]");
+              //logToFile("dailyrainin  $qarray[dailyrainin]");
+              $rain=data_getrain(); //get accumulated rain from 15 minutes ago
+              if ($rain !== false)
+              {
+                logToFile("dailyrainin from 15 min ago $rain");
+                $qarray["rainin"]=($qarray["dailyrainin"]-$rain)*4;
+                if ($qarray["rainin"] < 0 ) $qarray["rainin"] = 0;
+              }
+              //logToFile("rainin after $qarray[rainin]");
+            }
+            $client->publish("sensors/rain", $qarray["rainin"]);   
+            $client->loop();
+          } 
+          if (isset($qarray["dailyrainin"])) $client->publish("sensors/raintotal", $qarray["dailyrainin"]);
+          break;    
+        case "5N1x38":
+          $tempf=data_getval("ProOut|tempf");
+          if ($tempf !== false) 
+          {
+            $client->publish("sensors/temp", ($qarray["tempf"]+$tempf)/2.0);        
+          }  
+          else
+          {
+            $client->publish("sensors/temp", ($qarray["tempf"]));            
+          }        
+          break;
+        case "ProOut":
+          $client->publish("sensors/ProOutbattery",$qarray["battery"]=="normal"?0:1); 
+          $client->loop();
+          $client->publish("sensors/soil", $qarray["ptempf"]);
+          $client->loop();
+          $client->publish("sensors/humidity",  $qarray["humidity"]); 
+          break;    
+        case "tower-00007524":  
+          $client->publish("sensors/BasementBattery",$qarray["battery"]=="normal"?0:1);    
+          $client->loop();
+          $client->publish("sensors/tempf-basement", $qarray["tempf"]);        //tower hack, add serials here.
+          $client->loop();
+          $client->publish("sensors/humidity-basement", $qarray["humidity"]);      
+          $client->loop();
+          $client->publish("sensors/dewpoint-basement", ($qarray["tempf"] -  (100.0-$qarray["humidity"])) /5.0) ;       
+          break;
+        case "tower-00002909":  
+          $client->publish("sensors/KegBattery",$qarray["battery"]=="normal"?0:1);    
+          $client->loop();
+          $client->publish("sensors/tempf-keg", $qarray["tempf"]);        //tower hack, add serials here.
+          $client->loop();
+          $client->publish("sensors/humidity-keg", $qarray["humidity"]);      
+          break;
+        case "tower-00000915":  
+          $client->publish("sensors/garageBattery",$qarray["battery"]=="normal"?0:1);    
+          $client->loop();
+          $client->publish("sensors/garageTempf", $qarray["tempf"]);        //tower hack, add serials here.
+          $client->loop();
+          $client->publish("sensors/garageHumidity", $qarray["humidity"]);      
+          break;
+        default:
+           logToFile ("Unknown sensor".$station,true);
+      }
+      $client->disconnect(); 
+    }
+// ===    
   }
   else 
   {

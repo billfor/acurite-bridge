@@ -1,5 +1,5 @@
 ## AcuRite Weather Scripts
-These scripts intercept and log the sensor data from the acurite weatherbridge, providing access to all metrics sent to acurite and weatherunderground, and optionally restricting the information/status sent back to the bridge, such as to prevent auto-update.
+These scripts intercept and log the sensor data from the acurite weatherbridge, providing access to all metrics.
 
 ### Features:
 The following options may be turned on/off through variables in the script.
@@ -11,9 +11,9 @@ The following options may be turned on/off through variables in the script.
 - publish sensor data to MQTT (for use in openhab, etc....)
 - log all low-level request data to/from the bridge
 - freeze updates on the bridge (so this script will continue to work)
-- as of March 1st, fake data is sent back to the bridge to keep it working in absense of the acurite service
+- as of March 1st 2019, fake data is sent back to the bridge to keep it working in absense of the acurite service
+- as of Dec 2019, my bridge stopped sending to weather underground so I now handle this with a timer in openhab, so the wunderground poasting has been disabled from the script.
 - added support for the tower sensors (but you have to edit the code with your specific serial numbers)
-
 
 See the "upateweatherstation.php" script for further parameters.
 
@@ -31,7 +31,7 @@ See the "upateweatherstation.php" script for further parameters.
 
 One easy way to add dnsmasq entries is with a router that supports it  (dd-wrt, tomato, merlin, etc...), for example (assuming 192.168.1.250 is the acurite bridge) add the following to /tmp/etc/hosts and /jffs/config/hosts.add on the router:	
 
-	192.168.1.250 mylocalwebserver hubapi.myacurite.com rtupdate.wunderground.com
+	192.168.1.250 mylocalwebserver hubapi.myacurite.com
 
 ### Testing:
 
@@ -50,23 +50,14 @@ The configuration for the weatherstation directory should include something like
 	RewriteCond %{REQUEST_FILENAME}\.php -f
 	RewriteRule ^(.*)$ $1.php
 
-The weatherbridge uses http so you need to have Apache listening on port 80. If running with SSL remember to disable it for the weatherstation script:
+The weatherbridge uses http so you need to have Apache listening on port 80. If running with SSL remember to disable it for the weatherstation script, and also consider not logging the constant traffic.
 
 	RewriteRule "^/weatherstation" - [L]
 	# other rules that redirect traffic to 443
 
-### Debugging:
-Normal messages in the log  (LOGRESPONSE=true) look like:
-
-	[2017/03/17 00:19:01] acurite_from: {"localtime":"00:00:00","checkversion":"224"}
-	[2017/03/17 00:19:01] acurite_brdg: {"localtime":"00:00:00","checkversion":"224"}
-	[2017/03/17 00:19:55] wunderground: success
-
-There are two acurite GET requests from the bridge for every weatherunderground GET. The "localtime" parameter does not update in realtime, and is sometimes absent. All acurite responses are json.
-
-Wunderground will return the string "success" mostly, and occasionally return garbage or timeout. These errors should be expected.
-
-	[2017/03/15 04:50:33] Curl error: rtupdate.wunderground.com:52.25.21.79: Empty reply from server
+        # don't log the constant bridge traffic 
+        SetEnvIf Request_URI "^/weatherstation.*$" dontlog
+        CustomLog ${APACHE_LOG_DIR}/access.log combined env=!dontlog
 
 ### Openhab Samples:
 The directory openhab contains a sample configuration using the MQTT bindings.

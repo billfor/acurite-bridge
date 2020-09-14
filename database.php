@@ -205,7 +205,7 @@ function data_save($querystring,$keep,$sample,$history)
 	    	// try to execute once a day after 1st sample assuming acurite posts
 	    	// at least once every 42 seconds
 
-	    	if (time()%86400 < (42+$sample)) 
+	    	if (time()%86400 < 43)
 	    	{
 				$seconds=$history*86400;
 	            $delete = "DELETE FROM weather WHERE TIME < ".(time()-$seconds);

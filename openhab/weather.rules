@@ -1,0 +1,53 @@
+
+rule "Post weather data to wunderground"
+when
+        Time cron "0 */1 * * * ?"  //every x minutes 
+then
+
+	val String url="http://rtupdate.wunderground.com/weatherstation/updateweatherstation.php"
+	var String postdata="ID=yourID&PASSWORD=yourPASSWORD&dateutc=now&action=updateraw&realtime=1&rtfreq=60&id=yourID&mt=5N1x31&sensor=yourSensor"
+	postdata+="&windspeedmph="+Wind.state+"&winddir="+WindDir.state+"&rainin="+Rain.state+"&dailyrainin="+RainTotal.state
+			 +"&humidity="+Humidity.state+"&tempf="+OutTemp.state+"&baromin="+Baro.state+"&soiltempf="+Soil.state
+  //  logInfo("org.openhab","Posting data to weather undground."+url+" "+postdata)
+
+    var String result
+    var retryCount = 0
+
+    while (retryCount < 3 && result != "success") 
+    {
+		try 
+		{
+		    result = sendHttpPostRequest(url, "application/x-www-form-urlencoded", postdata, 3000)
+		    if (result !== null) result = result.replaceAll("[\\n]","")
+	    	//logInfo("org.openhab","wunderground result "+ result)
+	    	retryCount++
+		}
+		catch(java.util.concurrent.ExecutionException e) // this will not work until they fix http method to throw this.
+		{
+	    	logInfo("org.openhab","Posting data to weather undground failed. "+e.getMessage)
+		}	
+		catch(java.util.concurrent.TimeoutException e) // this will not work until they fix http method to throw this.
+		{
+	    	logInfo("org.openhab","Posting to wunderground timeout. "+e.getMessage)
+		}
+		catch(Exception e) 
+		{
+          logError("org.openhab", "wunderground exception" + e.getMessage)	
+        }
+	}
+end
+
+rule "Low Weather Batt"
+    when
+    Item Bat5 changed to 1
+    or
+    Item BatP changed to 1
+    or
+    Item BatKeg changed to 1
+    or
+    Item BatBase changed to 1
+    or
+    Item BatGarage changed to 1
+    then
+      sendMail("xxxxx@tmomail.net", "Weather","A battery is low or missing. Check status.")
+end

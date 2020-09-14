@@ -1,0 +1,29 @@
+Bridge mqtt:broker:myUnsecureBroker [ host="localhost",secure=false ]
+{
+
+	Thing topic accurite "Accurite" {
+	Channels:
+		Type number : outemp [ stateTopic="sensors/temp" ]
+		Type number : soil [ stateTopic="sensors/soil" ]
+		Type number : humidity [ stateTopic="sensors/humidity" ]
+		Type number : barometer [ stateTopic="sensors/barometer" ]
+		Type number : wind [ stateTopic="sensors/wind" ]
+		Type number : winddir [ stateTopic="sensors/winddir" ]
+		Type number : rain [ stateTopic="sensors/rain" ]
+		Type number : raintotal [ stateTopic="sensors/raintotal" ]
+		Type number : uv [ stateTopic="sensors/uv" ]
+		Type number : fbattery [ stateTopic="sensors/5N1battery" ]
+		Type number : ProOutbattery [ stateTopic="sensors/ProOutbattery" ]
+		Type number : KegBattery [ stateTopic="sensors/KegBattery" ]
+		Type number : BasementBattery [ stateTopic="sensors/BasementBattery" ]
+		Type number : garageBattery [ stateTopic="sensors/garageBattery" ]
+		Type number : tempfbasement [ stateTopic="sensors/tempf-basement" ]
+		Type number : humiditybasement [ stateTopic="sensors/humidity-basement" ]
+		Type number : dewpointbasement [ stateTopic="sensors/dewpoint-basement" ]
+		Type number : tempfkeg [ stateTopic="sensors/tempf-keg" ]
+		Type number : humiditykeg [ stateTopic="sensors/humidity-keg" ]
+		Type number : garageTempf [ stateTopic="sensors/garageTempf" ]
+		Type number : garageHumidity [ stateTopic="sensors/garageHumidity" ]
+	}
+}
+//foo
